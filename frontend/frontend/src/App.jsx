@@ -48,39 +48,100 @@ function App() {
     }
   };
 
-  return (
-    <div className="container">
-      <h1>🏫 API Escola - Gestão de Alunos</h1>
-      
-      <form onSubmit={handleSubmit} className="form">
-        <input placeholder="Nome" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} required />
-        <input placeholder="Email" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
-        <input placeholder="Curso" value={form.curso} onChange={e => setForm({...form, curso: e.target.value})} />
-        <input placeholder="Matrícula" value={form.matricula} onChange={e => setForm({...form, matricula: e.target.value})} />
-        <button type="submit">{editId ? 'Atualizar' : 'Adicionar'}</button>
-      </form>
+  // Métricas dinâmicas
+  const totalAlunos = alunos.length;
+  const cursosUnicos = [...new Set(alunos.map(a => a.curso).filter(Boolean))].length;
+  const horaAtual = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-      <table>
-        <thead>
-          <tr>
-            <th>Nome</th><th>Email</th><th>Curso</th><th>Matrícula</th><th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {alunos.map(a => (
-            <tr key={a.id}>
-              <td>{a.nome}</td>
-              <td>{a.email}</td>
-              <td>{a.curso}</td>
-              <td>{a.matricula}</td>
-              <td>
-                <button onClick={() => handleEdit(a)}>Editar</button>
-                <button onClick={() => handleDelete(a.id)} style={{background: '#ff4d4d', color: '#fff', border: 'none'}}>Excluir</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+  return (
+    <div className="dashboard">
+      <header className="header">
+        <h1>🏫 API Escola</h1>
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Painel de Gestão Acadêmica</span>
+      </header>
+
+      {/* Cards de Métricas */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <h3>Total de Alunos</h3>
+          <p>{totalAlunos}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Cursos Ativos</h3>
+          <p>{cursosUnicos}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Última Atualização</h3>
+          <p>{horaAtual}</p>
+        </div>
+      </div>
+
+      {/* Formulário */}
+      <section className="form-section">
+        <h2>{editId ? '✏️ Editar Aluno' : '➕ Novo Cadastro'}</h2>
+        <form onSubmit={handleSubmit} className="form-grid">
+          <div className="form-group">
+            <label>Nome Completo</label>
+            <input placeholder="Ex: Maria Silva" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} required />
+          </div>
+          <div className="form-group">
+            <label>Email Institucional</label>
+            <input placeholder="aluno@escola.com" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
+          </div>
+          <div className="form-group">
+            <label>Curso</label>
+            <input placeholder="Ex: Ciência da Computação" value={form.curso} onChange={e => setForm({...form, curso: e.target.value})} />
+          </div>
+          <div className="form-group">
+            <label>Matrícula</label>
+            <input placeholder="Ex: 20241001" value={form.matricula} onChange={e => setForm({...form, matricula: e.target.value})} />
+          </div>
+          <button type="submit" className="btn btn-primary" style={{ height: 'fit-content' }}>
+            {editId ? 'Salvar Alterações' : 'Cadastrar Aluno'}
+          </button>
+          {editId && (
+            <button type="button" className="btn btn-secondary" style={{ height: 'fit-content' }} onClick={() => { setEditId(null); setForm({ nome: '', email: '', curso: '', matricula: '' }); }}>
+              Cancelar
+            </button>
+          )}
+        </form>
+      </section>
+
+      {/* Tabela */}
+      <section className="table-section">
+        <div className="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Curso</th>
+                <th>Matrícula</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {alunos.map(a => (
+                <tr key={a.id}>
+                  <td style={{ fontWeight: 500 }}>{a.nome}</td>
+                  <td>{a.email}</td>
+                  <td><span className="badge">{a.curso || 'N/A'}</span></td>
+                  <td style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>{a.matricula || '-'}</td>
+                  <td><span className="badge" style={{ background: '#d1fae5', color: '#059669' }}>Ativo</span></td>
+                  <td className="actions">
+                    <button className="btn btn-secondary" onClick={() => handleEdit(a)}>Editar</button>
+                    <button className="btn btn-danger" onClick={() => handleDelete(a.id)}>Excluir</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {alunos.length === 0 && (
+            <div className="empty-state">Nenhum aluno cadastrado ainda. Comece adicionando um novo registro.</div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
